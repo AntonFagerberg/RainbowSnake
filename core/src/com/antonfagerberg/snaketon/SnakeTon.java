@@ -3,7 +3,6 @@ package com.antonfagerberg.snaketon;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 
@@ -16,8 +15,9 @@ public class SnakeTon extends ApplicationAdapter {
 
     LinkedList<List<Integer>> tail = new LinkedList<>();
 
-    boolean dead;
-    int x, y, xx, yy, xh, yh, xa, ya, tick, tickLimit = 15;
+    boolean dead, newSpawn;
+    int[] scales = new int[]{200, 100, 50, 20, 10, 4, 2, 1};
+    int x, y, xx, yy, xh, yh, xa, ya, tick, level, scale, tickLimit, maxScale = 400;
     ShapeRenderer shapeRenderer;
     Random random;
 
@@ -32,39 +32,64 @@ public class SnakeTon extends ApplicationAdapter {
         dead = false;
         tick = 0;
         tickLimit = 15;
-        x = 10;
-        y = 10;
+        x = 0;
+        y = 0;
         xx = 1;
         yy = 0;
         xh = xx;
         yh = yy;
+        level = 0;
+        scale = scales[level];
         tail.clear();
-        moveApple();
+        spawnDot();
     }
 
-    void moveApple() {
-        int nx = -1, ny = -1;
+    void spawnDot() {
+        List<List<Integer>> freeCoordinates = new ArrayList<>();
 
-        boolean conflict = true;
-        while (conflict) {
-            ny = 10 * random.nextInt(40);
-            nx = 10 * random.nextInt(40);
-            conflict = false;
-
-            if (x == nx && y == ny) {
-                conflict = true;
-            } else {
-                for (List<Integer> coordinate : tail) {
-                    if (coordinate.get(0) == nx && coordinate.get(1) == ny) {
-                        conflict = true;
-                        break;
+        for (int nx = 0; nx < maxScale / scale; nx++) {
+            for (int ny = 0; ny < maxScale / scale; ny++) {
+                boolean conflict = false;
+                if (x == nx && y == ny) {
+                    conflict = true;
+                } else {
+                    for (List<Integer> coordinate : tail) {
+                        if (coordinate.get(0) == nx && coordinate.get(1) == ny) {
+                            conflict = true;
+                            break;
+                        }
                     }
+                }
+
+                if (!conflict) {
+                    List<Integer> coordinate = new ArrayList<>(2);
+                    coordinate.add(nx);
+                    coordinate.add(ny);
+                    freeCoordinates.add(coordinate);
                 }
             }
         }
 
-        xa = nx;
-        ya = ny;
+        if (freeCoordinates.isEmpty()) {
+            scale = scales[++level];
+            tail.clear();
+            x = 1;
+            y = 0;
+            xx = 1;
+            yy = 0;
+            for (int z = 0; z < maxScale / scale; z++) {
+                List<Integer> tailPiece = new ArrayList<>(2);
+                tailPiece.add(0);
+                tailPiece.add(z);
+                tail.addLast(tailPiece);
+            }
+            newSpawn = true;
+            spawnDot();
+        } else {
+            List<Integer> coordinate = freeCoordinates.get(random.nextInt(freeCoordinates.size()));
+            xa = coordinate.get(0);
+            ya = coordinate.get(1);
+        }
     }
 
     @Override
@@ -76,73 +101,83 @@ public class SnakeTon extends ApplicationAdapter {
                 reload();
             }
         } else {
-            if (Gdx.input.isKeyPressed(Input.Keys.UP) && yh == 0 && !Gdx.input.isKeyPressed(Input.Keys.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-                yy = 1;
-                xx = 0;
-            } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && yh == 0 && !Gdx.input.isKeyPressed(Input.Keys.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-                yy = -1;
-                xx = 0;
-            } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && xh == 0 && !Gdx.input.isKeyPressed(Input.Keys.UP) && !Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-                yy = 0;
-                xx = -1;
-            } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && xh == 0 && !Gdx.input.isKeyPressed(Input.Keys.UP) && !Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-                yy = 0;
-                xx = 1;
+            if (!newSpawn) {
+                if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+                    if (yh == 0) {
+                        yy = 1;
+                        xx = 0;
+                    }
+                } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+                    if (yh == 0) {
+                        yy = -1;
+                        xx = 0;
+                    }
+                } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+                    if (xh == 0) {
+                        yy = 0;
+                        xx = -1;
+                    }
+                } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+                    if (xh == 0) {
+                        yy = 0;
+                        xx = 1;
+                    }
+                }
             }
 
             if (++tick > tickLimit) {
+                newSpawn = false;
                 tick = 0;
-
 
                 xh = xx;
                 yh = yy;
 
                 int xp = x, yp = y;
 
-                x += 10 * xx;
-                y += 10 * yy;
+                x += xx;
+                y += yy;
 
-                if (x < 0 || y < 0 || x >= 400 || y >= 400) {
+                if (x < 0 || y < 0 || x >= maxScale / scale || y >= maxScale / scale) {
                     dead = true;
-                }
+                    x = xp;
+                    y = yp;
+                } else {
+                    for (List<Integer> coordinate : tail) {
+                        if (x == coordinate.get(0) && y == coordinate.get(1)) {
+                            dead = true;
+                            break;
+                        }
+                    }
 
-                for (List<Integer> coordinate : tail) {
-                    if (x == coordinate.get(0) && y == coordinate.get(1)) {
-                        dead = true;
+                    if (x == xa && y == ya) {
+                        List<Integer> tailPiece = new ArrayList<>(2);
+                        tailPiece.add(xp);
+                        tailPiece.add(yp);
+                        tail.addFirst(tailPiece);
+                        spawnDot();
+                    } else if (!tail.isEmpty()) {
+                        List<Integer> tailPiece = new ArrayList<>(2);
+                        tailPiece.add(xp);
+                        tailPiece.add(yp);
+                        tail.addFirst(tailPiece);
+                        tail.removeLast();
                     }
                 }
-
-                if (x == xa && y == ya) {
-                    moveApple();
-                    List<Integer> tailPiece = new ArrayList<>(2);
-                    tailPiece.add(xp);
-                    tailPiece.add(yp);
-                    tail.addFirst(tailPiece);
-                    if (tickLimit > 2) {
-                        tickLimit--;
-                    }
-                } else if (!tail.isEmpty()) {
-                    List<Integer> tailPiece = new ArrayList<>(2);
-                    tailPiece.add(xp);
-                    tailPiece.add(yp);
-                    tail.addFirst(tailPiece);
-                    tail.removeLast();
-                }
-
             }
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(0.54509807f, 0.6745098f, 0.05490196f, 0f);
-            shapeRenderer.box(xa, ya, 0, 10, 10, 0);
-
-            shapeRenderer.setColor(0.1882353f, 0.38431373f, 0.1882353f, 0.0f);
-            shapeRenderer.box(x, y, 0, 10, 10, 0);
-
-            for (List<Integer> coordinate : tail) {
-                shapeRenderer.box(coordinate.get(0), coordinate.get(1), 0, 10, 10, 0);
-            }
-
-            shapeRenderer.end();
         }
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0.54509807f, 0.6745098f, 0.05490196f, 0f);
+        shapeRenderer.box(xa * scale, ya * scale, 0, scale, scale, 0);
+
+        shapeRenderer.setColor(0.1882353f, 0.38431373f, 0.1882353f, 0.0f);
+        shapeRenderer.box(x * scale, y * scale, 0, scale, scale, 0);
+
+        for (List<Integer> coordinate : tail) {
+            shapeRenderer.box(coordinate.get(0) * scale, coordinate.get(1) * scale, 0, scale, scale, 0);
+        }
+
+        shapeRenderer.end();
     }
 
     @Override

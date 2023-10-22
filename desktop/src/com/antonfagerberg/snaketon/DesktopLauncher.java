@@ -10,7 +10,7 @@ public class DesktopLauncher {
 		config.setForegroundFPS(60);
 		config.setWindowedMode(400, 400);
 		config.useVsync(true);
-		config.setTitle("Snaketon");
+		config.setTitle("Snakexpand");
 		new Lwjgl3Application(new SnakeTon(), config);
 	}
 }
