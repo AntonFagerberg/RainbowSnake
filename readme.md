@@ -9,3 +9,9 @@ When you're 4 blocks long, and you fill up the entire screen, the world will exp
 Was it a good idea in theory? YES! In practice? It's not without problems. One of them being that I had to "unroll" the snake since there's a good chance you're about to eat yourself after reaching the last dot.
 
 It was a fun weekend project, a few hours well spent.
+
+[Try it out online! 🕹🐍](http://www.antonfagerberg.com/snakexpand/)
+
+### GIF 🎉
+
+![snakexpand](snakexpand.gif)
