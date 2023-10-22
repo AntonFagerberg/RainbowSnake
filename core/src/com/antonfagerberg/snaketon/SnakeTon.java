@@ -34,7 +34,7 @@ public class SnakeTon extends ApplicationAdapter {
         tickLimit = 15;
         x = 0;
         y = 0;
-        xx = 1;
+        xx = 0;
         yy = 0;
         xh = xx;
         yh = yy;
