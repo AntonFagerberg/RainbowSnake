@@ -1,17 +1,8 @@
-# Snakexpand
+# RainbowSnake
 
-This is a weird snake game I created with Java and libGDX. 
-The game is a lot like the old classical snake game but every time you manage to fill up the entire screen, the world expands.
+Yet [another](https://github.com/AntonFagerberg/snakexpand) weird snake game.
 
-At first you're on a 4x4 grid where you (the snake) fill up 1/4th of the world and the dot (apple?) fills up 1/4th of the screen.
-When you're 4 blocks long, and you fill up the entire screen, the world will expand.
+You grow by 10 blocks every time you eat a dot, and instead of dying
+if you run into yourself, you'll lose your tail from that point.
 
-Was it a good idea in theory? YES! In practice? It's not without problems. One of them being that I had to "unroll" the snake since there's a good chance you're about to eat yourself after reaching the last dot.
-
-It was a fun weekend project, a few hours well spent.
-
-[Try it out online! 🕹🐍](http://www.antonfagerberg.com/snakexpand/)
-
-### GIF 🎉
-
-![snakexpand](snakexpand.gif)
+![RainbowSnake.gif](RainbowSnake.gif)
